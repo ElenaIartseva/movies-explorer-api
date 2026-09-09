@@ -59,10 +59,13 @@ const movieSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  id: {
+  movieId: {
     type: Number,
     required: true,
   },
 });
+
+movieSchema.index({ owner: 1, movieId: 1 }, { unique: true });
+movieSchema.set('id', false);
 
 module.exports = mongoose.model('movie', movieSchema);
