@@ -2,45 +2,55 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require('validator');
 const AuthorizationError = require('../errors/AuthorizationError');
+const { NAME_MIN_LENGTH, NAME_MAX_LENGTH } = require('../utils/config');
 
-const userSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: {
-      validator: validator.isEmail,
-      message: 'Некорректный email или пароль',
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: validator.isEmail,
+        message: 'Некорректный email',
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      select: false,
+    },
+    name: {
+      type: String,
+      required: true,
+      minlength: NAME_MIN_LENGTH,
+      maxlength: NAME_MAX_LENGTH,
     },
   },
-  password: {
-    type: String,
-    required: true,
-    select: false,
-  },
-  name: {
-    type: String,
-    minlength: 2,
-    maxlength: 30,
-  },
-}, { toObject: { useProjection: true }, toJSON: { useProjection: true } });
-// чтобы пароль не возвращался ^
+  { toObject: { useProjection: true }, toJSON: { useProjection: true } }
+);
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function findUserByCredentials(
+  email,
+  password
+) {
   return this.findOne({ email })
     .select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new AuthorizationError('Неправильные почта или пароль'));
+        return Promise.reject(
+          new AuthorizationError('Неправильные почта или пароль')
+        );
       }
-      // нашёлся — сравниваем хеши
-      return bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            return Promise.reject(new AuthorizationError('Неправильные почта или пароль'));
-          }
-          return user;
-        });
+
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          return Promise.reject(
+            new AuthorizationError('Неправильные почта или пароль')
+          );
+        }
+        return user;
+      });
     });
 };
 

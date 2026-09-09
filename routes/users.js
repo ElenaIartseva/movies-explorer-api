@@ -1,19 +1,19 @@
 const userRoutes = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
-const {
-  getUserMe,
-  updateUser,
-} = require('../controllers/users');
+const { getUserMe, updateUser } = require('../controllers/users');
+const { NAME_MIN_LENGTH, NAME_MAX_LENGTH } = require('../utils/config');
 
-// возвращает информацию о пользователе (email и имя)
 userRoutes.get('/me', getUserMe);
 
-// обновляет информацию о пользователе (email и имя)
-userRoutes.patch('/me', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    email: Joi.string().required().email(),
+userRoutes.patch(
+  '/me',
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().min(NAME_MIN_LENGTH).max(NAME_MAX_LENGTH).required(),
+      email: Joi.string().required().email(),
+    }),
   }),
-}), updateUser);
+  updateUser
+);
 
 module.exports = userRoutes;

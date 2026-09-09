@@ -1,0 +1,14 @@
+const { defineConfig } = require('vitest/config');
+
+module.exports = defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    testTimeout: 30000,
+    env: {
+      NODE_ENV: 'test',
+      JWT_SECRET: 'test-secret',
+      ALLOWED_ORIGINS: '*',
+    },
+  },
+});
